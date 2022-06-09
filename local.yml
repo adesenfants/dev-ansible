@@ -2,8 +2,107 @@
 - hosts: localhost
   connection: local
   become: true
+  become_user: adamd
 
   tasks:
-  - name: install htop
-    package:
-      name: htop
+    - name: Install packages.
+      package:
+        state: present
+        name: 
+          - git
+          - make
+          - pip
+          - cargo
+          - htop
+          - curl
+          - wget
+          - nodejs
+          - npm
+
+    - name: Download nvm
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
+        dest: /tmp/nvm-install.sh
+        mode: 0700
+
+    - name: Install nvm
+      shell: /tmp/nvm-install.sh
+
+    - name: Setup latest Node version
+      shell: "source /home/adamd/.nvm/nvm.sh && nvm install node && nvm use node"
+      args:
+        executable: /bin/bash
+
+    - name: Download nvim install
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/LunarVim/LunarVim/rolling/utils/installer/install-neovim-from-release
+        dest: /tmp/nvim-install.sh
+        mode: 0700
+
+    - name: Setup neovim
+      shell: /tmp/nvim-install.sh
+      args:
+        executable: /bin/bash
+
+    - name: Download lunarvim install
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/lunarvim/lunarvim/rolling/utils/installer/install.sh
+        dest: /tmp/lvim-install.sh
+        mode: 0700
+
+    - name: Setup lunarvim
+      shell: LV_BRANCH=rolling && /tmp/lvim-install.sh
+      args:
+        executable: /bin/bash
+
+
+
+
+
+  #   - name: Ensure dependencies are present.
+  #     become: true
+  #     apt:
+  #       name:
+  #         - apt-transport-https
+  #         - gnupg2
+  #       state: present
+  # 
+  #   - name: Add Nodesource apt key.
+  #     become: true
+  #     apt_key:
+  #       url: https://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0x1655A0AB68576280
+  #       id: "68576280"
+  #       state: present
+  # 
+  #   - name: Add NodeSource repositories for Node.js.
+  #     apt_repository:
+  #       repo: "{{ item }}"
+  #       state: present
+  #     with_items:
+  #       - "deb https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main"
+  #       - "deb-src https://deb.nodesource.com/node_{{ nodejs_version }} {{ ansible_distribution_release }} main"
+  #     register: node_repo
+  # 
+  #   - name: Update apt cache if repo was added.
+  #     apt: update_cache=yes
+  #     when: node_repo.changed
+  #     tags: ['skip_ansible_lint']
+  # 
+  #   - name: Ensure Node.js and npm are installed.
+  #     apt:
+  #       name: "nodejs={{ nodejs_version|regex_replace('x', '') }}*"
+  #       state: present 
+
+          # - name: Download script to setup lunarvim dependencies.
+          #   get_url:
+          #     url: https://raw.githubusercontent.com/lunarvim/lunarvim/master/utils/installer/install.sh
+          #     dest: /tmp/lvim-deps.sh
+          #     mode: 0700
+
+          # - name: Execute the lvim-deps.sh
+          #   shell: /tmp/lvim-deps.sh -y
+
+          # - name: Remove the lvim-deps.sh
+          #   file:
+          #     path: /tmp/lvim-deps.sh
+          #     state: absent
